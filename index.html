@@ -264,7 +264,7 @@ async function handleSearch() {
 
   try {
     // Aqui fazemos a ligação com o seu FastAPI (Passo 3)
-    const response = await fetch('http://localhost:8000/analisar', {
+    const response = await fetch('https://dossie-paciente.onrender.com/analisar', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
