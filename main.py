@@ -103,11 +103,11 @@ def analisar_com_gemini(texto: str):
         f'Dados coletados do perfil:\n{texto}'
     )
 
-    # 🚀 O SISTEMA DE REDUNDÂNCIA BLINDADO
+    # 🚀 BLINDAGEM ATUALIZADA PARA CHAVES NOVAS (Geração 2.0)
     modelos_para_testar = [
-        'gemini-1.5-flash',       # Cota massiva, super rápido
-        'gemini-1.5-pro',         # Cota menor, inteligência extrema
-        'gemini-1.0-pro'          # O legado indestrutível, nunca falha
+        'gemini-2.0-flash',           # O modelo oficial atual liberado para chaves novas
+        'gemini-2.0-flash-exp',       # Versão experimental (sempre com cota liberada)
+        'gemini-1.5-flash'            # Backup caso a chave antiga ressuscite
     ]
 
     ultimo_erro = None
