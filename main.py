@@ -38,7 +38,8 @@ def extrair_instagram(username: str):
         json={
             "directUrls": [f"https://www.instagram.com/{username}/"],
             "resultsType": "details",
-            "resultsLimit": 15, # AUMENTADO DE 5 PARA 15 POSTS
+            # Reduzido de 15 para 8 para evitar o limite de tempo do servidor gratuito (Timeout)
+            "resultsLimit": 8, 
         },
     )
     run_resp.raise_for_status()
@@ -65,7 +66,6 @@ def extrair_instagram(username: str):
     profile = items[0]
     bio = profile.get("biography") or ""
     
-    # NOVOS DADOS DE STATUS SOCIAL
     followers = profile.get("followersCount", 0)
     following = profile.get("followsCount", 0)
 
@@ -112,15 +112,21 @@ def analisar_com_gemini(texto: str):
         ),
     )
 
-    return json.loads(response.text)
+    # Sistema de limpeza de sujeira (Markdown) da resposta da Inteligência Artificial
+    texto_resposta = response.text.strip()
+    if texto_resposta.startswith("```json"):
+        texto_resposta = texto_resposta.removeprefix("```json").removesuffix("```").strip()
+    elif texto_resposta.startswith("```"):
+        texto_resposta = texto_resposta.removeprefix("```").removesuffix("```").strip()
+
+    return json.loads(texto_resposta)
 
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):
     username = req.username.strip().lstrip("@")
     bio, followers, following, posts = extrair_instagram(username)
     
-    # Criando o dossiê bruto com os novos dados sociais e mais posts
-    texto_bruto = f"MÉTRICAS DE STATUS:\nSeguidores: {followers}\nSeguindo: {following}\n\nBIO:\n{bio}\n\nÚLTIMOS 15 POSTS:\n" + "\n---\n".join(posts)
+    texto_bruto = f"MÉTRICAS DE STATUS:\nSeguidores: {followers}\nSeguindo: {following}\n\nBIO:\n{bio}\n\nÚLTIMOS 8 POSTS:\n" + "\n---\n".join(posts)
     
     resultado = analisar_com_gemini(texto_bruto)
     return resultado
