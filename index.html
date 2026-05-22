@@ -1,0 +1,324 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiê do Paciente</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #D4A853;
+    --gold-light: #E8C97A;
+    --gold-border: rgba(212, 168, 83, 0.25);
+    --gold-subtle: rgba(212, 168, 83, 0.08);
+    --gold-glow: rgba(212, 168, 83, 0.15);
+    --surface: #0D0D0D;
+    --surface-card: #1A1A1A;
+    --text-primary: #F5F0EB;
+    --text-secondary: rgba(245, 240, 235, 0.6);
+    --text-muted: rgba(245, 240, 235, 0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: #050505;
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .font-display { font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; }
+  .gold-text { color: var(--gold); }
+  .gold-border { border-color: var(--gold-border); }
+  .gold-bg-subtle { background: var(--gold-subtle); }
+  input::placeholder { color: var(--text-muted); }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, var(--gold-subtle) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+  .pill-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .pill-tag:hover {
+    background: var(--gold-subtle);
+    border-color: var(--gold);
+  }
+  .card {
+    background: var(--surface-card);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .highlight-box {
+    background: var(--gold-subtle);
+    border: 1px solid var(--gold-border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+  .highlight-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 12px 12px 0 0;
+    opacity: 0.6;
+  }
+  .search-btn {
+    background: var(--gold);
+    color: #050505;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .search-btn:hover {
+    background: var(--gold-light);
+    box-shadow: 0 0 20px var(--gold-glow);
+  }
+  .search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .fade-slide-up {
+    opacity: 0;
+    animation: fadeSlideUp 0.5s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+
+<div id="app" class="min-h-screen flex flex-col" style="background:#050505;">
+
+  <!-- Top bar -->
+  <header class="flex items-center justify-between px-8 py-5" style="border-bottom:1px solid rgba(255,255,255,0.04);">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-full" style="background:var(--gold);"></div>
+      <span class="font-display text-lg tracking-wide" style="color:var(--text-primary);">Dossiê</span>
+    </div>
+    <div class="flex items-center gap-6">
+      <span class="text-sm" style="color:var(--text-muted);">Sala VIP</span>
+      <span class="text-sm" style="color:var(--text-muted);">Histórico</span>
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style="background:var(--gold-subtle);color:var(--gold);border:1px solid var(--gold-border);">IS</div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 flex justify-center px-6 py-12">
+    <div class="w-full max-w-3xl">
+
+      <!-- Page title -->
+      <div class="mb-10">
+        <h1 class="font-display text-4xl sm:text-5xl font-medium tracking-tight" style="color:var(--text-primary);">Dossiê do Paciente</h1>
+        <p class="mt-2 text-sm" style="color:var(--text-muted);">Perfil de preferências, estilo e ações sugeridas</p>
+      </div>
+
+      <!-- Search -->
+      <div class="flex items-center gap-3 p-2 rounded-xl mb-10" style="background:var(--surface);border:1px solid rgba(255,255,255,0.06);">
+        <div class="flex-1 flex items-center gap-2 px-3">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--text-muted);">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <input id="search-input" type="text" placeholder="Digite o @ do paciente" class="w-full bg-transparent text-sm outline-none py-3" style="color:var(--text-primary);" autocomplete="off">
+        </div>
+        <button id="search-btn" class="search-btn" onclick="handleSearch()">Analisar Perfil</button>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
+        <div class="w-10 h-10 rounded-full shimmer"></div>
+        <p class="text-sm" style="color:var(--gold);">Analisando perfil...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="flex flex-col items-center justify-center py-20 gap-3">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center" style="background:var(--gold-subtle);border:1px solid var(--gold-border);">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--gold);">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+          </svg>
+        </div>
+        <p class="text-sm" style="color:var(--text-muted);">Digite o @ de um paciente para começar</p>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="hidden space-y-6">
+
+        <!-- Patient header -->
+        <div class="flex items-center gap-4 mb-2 fade-slide-up" style="animation-delay:0s;">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold" style="background:var(--gold-subtle);color:var(--gold);border:1px solid var(--gold-border);font-family:'Playfair Display',serif;">IS</div>
+          <div>
+            <h2 id="patient-name" class="font-display text-2xl font-medium" style="color:var(--text-primary);"></h2>
+            <p id="patient-handle" class="text-sm" style="color:var(--text-muted);"></p>
+          </div>
+        </div>
+
+        <!-- Abordagem -->
+        <div class="card fade-slide-up" style="animation-delay:0.1s;">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--gold);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/>
+            </svg>
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--gold);">Abordagem</span>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <p class="text-xs font-medium mb-1.5" style="color:var(--text-muted);">Estilo de Atendimento</p>
+              <p id="estilo-atendimento" class="text-sm leading-relaxed" style="color:var(--text-secondary);"></p>
+            </div>
+            <div>
+              <p class="text-xs font-medium mb-1.5" style="color:var(--text-muted);">Estilo Vestuário & Design</p>
+              <p id="estilo-vestuario" class="text-sm leading-relaxed" style="color:var(--text-secondary);"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gostos Premium -->
+        <div class="card fade-slide-up" style="animation-delay:0.2s;">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--gold);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+            </svg>
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--gold);">Gostos Premium</span>
+          </div>
+          <div id="gostos-list" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Ação Imediata -->
+        <div class="highlight-box fade-slide-up" style="animation-delay:0.3s;">
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--gold);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
+            </svg>
+            <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--gold);">Ação Imediata</span>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <p class="text-xs font-medium mb-1.5" style="color:var(--text-muted);">Sugestão de Presente</p>
+              <p id="sugestao-presente" class="text-sm leading-relaxed" style="color:var(--text-primary);"></p>
+            </div>
+            <div>
+              <p class="text-xs font-medium mb-1.5" style="color:var(--text-muted);">Quebra-Gelo</p>
+              <p id="quebra-gelo" class="text-sm leading-relaxed italic" style="color:var(--gold);"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// Transformamos a função em assíncrona (async) para esperar a resposta da IA
+async function handleSearch() {
+  const input = document.getElementById('search-input');
+  const loading = document.getElementById('loading');
+  const emptyState = document.getElementById('empty-state');
+  const results = document.getElementById('results');
+  const btn = document.getElementById('search-btn');
+
+  // Limpa o @ se o usuário digitar junto
+  const query = input.value.trim().replace('@', '');
+  
+  if (!query) {
+    input.style.outline = '1px solid var(--gold-border)';
+    setTimeout(() => input.style.outline = '', 1500);
+    return;
+  }
+
+  // Prepara a tela para o carregamento
+  btn.disabled = true;
+  btn.textContent = 'Analisando o Instagram...';
+  emptyState.classList.add('hidden');
+  results.classList.add('hidden');
+  loading.classList.remove('hidden');
+
+  try {
+    // Aqui fazemos a ligação com o seu FastAPI (Passo 3)
+    const response = await fetch('http://localhost:8000/analisar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username: query })
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao analisar o perfil. O Instagram pode ser privado.');
+    }
+
+    const data = await response.json();
+
+    // Esconde o carregamento
+    loading.classList.add('hidden');
+
+    // Preenche os dados reais devolvidos pelo Gemini
+    document.getElementById('patient-name').textContent = "Análise Concluída";
+    document.getElementById('patient-handle').textContent = '@' + query;
+    document.getElementById('estilo-atendimento').textContent = data.estilo_atendimento;
+    document.getElementById('estilo-vestuario').textContent = data.estilo_vestuario_design;
+    document.getElementById('sugestao-presente').textContent = data.sugestao_presente;
+    document.getElementById('quebra-gelo').textContent = data.quebra_gelo;
+
+    // Cria as tags douradas de interesses dinamicamente
+    const gostosContainer = document.getElementById('gostos-list');
+    gostosContainer.innerHTML = ''; // Limpa as antigas
+    
+    data.gostos_premium.forEach(item => {
+      const tag = document.createElement('span');
+      tag.className = 'pill-tag';
+      tag.textContent = item;
+      gostosContainer.appendChild(tag);
+    });
+
+    // Mostra o resultado final e libera o botão
+    results.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Nova Análise';
+
+  } catch (error) {
+    console.error(error);
+    alert('Ops! Não foi possível analisar este perfil. Verifique se ele é aberto ou se o @ está correto.');
+    loading.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Analisar Perfil';
+  }
+}
+
+// Mantém o atalho para acionar a busca ao apertar "Enter"
+document.getElementById('search-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleSearch();
+});
+</script>
+</body>
+</html>
