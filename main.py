@@ -20,7 +20,6 @@ class AnalisarRequest(BaseModel):
     username: str
 
 APIFY_TOKEN = os.getenv("APIFY_TOKEN")
-# Agora puxamos a chave da Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not APIFY_TOKEN:
@@ -76,26 +75,26 @@ def extrair_instagram(username: str):
 
 def analisar_com_groq(texto: str):
     prompt = (
-        'Você é um auditor financeiro implacável, frio e experiente estrategista de vendas '
-        'em uma clínica odontológica de estética de altíssimo ticket (High-Ticket). '
-        'Analise os dados deste futuro paciente para mapear sua real capacidade financeira e perfil psicológico. '
+        'Você é um estrategista de negócios de elite e analista comportamental '
+        'trabalhando para uma clínica odontológica de estética e reabilitação de altíssimo padrão. '
+        'Sua missão é fornecer dossiês profundos, sofisticados e altamente detalhados sobre o paciente. '
         'REGRAS CRÚCIAIS DE VALORAÇÃO:\n'
-        '1. Considere a relação de Seguidores vs Seguindo para entender o status social e o ego da pessoa.\n'
-        '2. NÃO seja polido, otimista ou complacente. Avalie o histórico longo de postagens. Se não houver sinais explícitos de luxo, classifique categoricamente como Baixo ou Médio Padrão.\n'
-        '3. Identifique marcas de luxo específicas, destinos de viagens ou hábitos.\n\n'
+        '1. ESCREVA PARÁGRAFOS RICOS E BEM DESENVOLVIDOS. É estritamente proibido dar respostas curtas. Use um tom de consultoria premium e elegante.\n'
+        '2. Analise profundamente a relação de Seguidores vs Seguindo, a biografia e o tom das postagens para deduzir o ego e a personalidade.\n'
+        '3. Seja realista e implacável: justifique detalhadamente o PORQUÊ de cada conclusão com base nos sinais lidos.\n\n'
         'Retorne UNICAMENTE um JSON estrito no seguinte formato exato:\n'
         '{\n'
-        '  "capacidade_pagamento": "Veredito direto (Alto, Médio ou Baixo Padrão). Justifique friamente com base na presença/ausência de patrimônio e status social (seguidores).",\n'
-        '  "perfil_disc": "Classifique em apenas uma palavra (Dominante, Influente, Estável ou Conforme) seguido de uma frase curta ensinando como falar com esse tipo de mente.",\n'
-        '  "objecao_principal": "Qual será o principal entrave na venda? (Preço, Tempo, Medo de Dor, Necessidade de aprovação de terceiros). Defina e dê a contra-argumentação.",\n'
-        '  "red_flags": "Identifique traços de vitimismo, inclinação a reclamações ou polêmicas. Se o perfil parecer tranquilo, retorne uma string vazia.",\n'
-        '  "match_estetica": "Defina a linha estética predileta do paciente com base no estilo de fotos: Naturalidade Absoluta (Discreto/Elegant) ou Branco Extravagante (Marcante/Alta visibilidade).",\n'
-        '  "radar_concorrentes": "Analise se há indícios de que ele busca ou consome outros players do mercado estético de luxo, ou se é altamente blindado. Retorne vazio se não notar nada.",\n'
-        '  "estilo_atendimento": "Script de condução comercial focada no fechamento do tratamento sem dar descontos.",\n'
-        '  "estilo_vestuario_design": "Relação de grifes, relógios e vestuário identificados ou deduzidos pelo nível de sofisticação.",\n'
-        '  "gostos_premium": ["Lista", "de hobbies", "destinos de viagem", "bens de valor"],\n'
-        '  "sugestao_presente": "Apresente 3 opções claras de mimos corporativos personalizados: 1) Um item minimalista/artesanal de alto padrão, 2) Uma experiência memorável, 3) Um item de luxo de marca consolidada.",\n'
-        '  "quebra_gelo": "A melhor frase de abertura magnética baseada no ego ou grande interesse do paciente."\n'
+        '  "capacidade_pagamento": "Veredito (Alto/Médio/Baixo) seguido de um parágrafo detalhado justificando a análise financeira e o nível de sofisticação do lifestyle.",\n'
+        '  "perfil_disc": "Classificação (Dominante, Influente, Estável ou Conforme) acompanhada de uma análise psicológica profunda de como conduzir a comunicação e a venda com essa mente.",\n'
+        '  "objecao_principal": "Escreva um parágrafo robusto identificando o provável maior obstáculo (preço, tempo, medo) e entregando a estratégia argumentativa para quebrá-lo.",\n'
+        '  "red_flags": "Análise detalhada de possíveis traços tóxicos, vitimismo ou nível de exigência. Se não houver, explique por que o perfil indica ser um excelente paciente.",\n'
+        '  "match_estetica": "Parágrafo detalhado sobre a preferência visual (Naturalidade Absoluta vs Branco Extravagante) e como ancorar o valor do tratamento nisso.",\n'
+        '  "radar_concorrentes": "Análise profunda sobre o consumo de luxo, padrão de exigência e se o paciente parece buscar status através de marcas conhecidas.",\n'
+        '  "estilo_atendimento": "Um roteiro comercial extenso e estratégico, detalhando a postura clínica, o tom de voz e os gatilhos de autoridade a serem usados.",\n'
+        '  "estilo_vestuario_design": "Descrição minuciosa do estilo pessoal, deduzindo grifes e o que esse padrão de exigência visual significa para o trabalho do dentista.",\n'
+        '  "gostos_premium": ["Hobby ou Marca 1", "Destino ou Item 2", "Interesse 3", "Característica 4"],\n'
+        '  "sugestao_presente": "Três opções descritivas e detalhadas de presentes corporativos sofisticados, com a justificativa de por que cada um encantaria este perfil.",\n'
+        '  "quebra_gelo": "Uma ou duas frases magnéticas, personalizadas e altamente elegantes para abrir a conversa gerando rapport imediato."\n'
         '}\n\n'
         f'Dados coletados do perfil:\n{texto}'
     )
@@ -105,15 +104,14 @@ def analisar_com_groq(texto: str):
         "Content-Type": "application/json"
     }
     
-    # Usando o modelo mais avançado e rápido da Groq
     payload = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
-            {"role": "system", "content": "Você é um assistente que retorna APENAS JSON válido."},
+            {"role": "system", "content": "Você é um consultor premium que escreve análises longas, discursivas, detalhadas e sofisticadas. Retorne apenas JSON válido."},
             {"role": "user", "content": prompt}
         ],
         "response_format": {"type": "json_object"},
-        "temperature": 0.2
+        "temperature": 0.6 # Destravando a eloquência e criatividade do modelo
     }
 
     response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
