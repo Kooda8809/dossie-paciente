@@ -5,8 +5,6 @@ import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from google import genai
-from google.genai import types
 
 app = FastAPI()
 
@@ -22,14 +20,13 @@ class AnalisarRequest(BaseModel):
     username: str
 
 APIFY_TOKEN = os.getenv("APIFY_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Agora puxamos a chave da Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not APIFY_TOKEN:
     raise RuntimeError("APIFY_TOKEN não definido")
-if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY não definida")
-
-client = genai.Client(api_key=GEMINI_API_KEY)
+if not GROQ_API_KEY:
+    raise RuntimeError("GROQ_API_KEY não definida")
 
 def extrair_instagram(username: str):
     run_resp = requests.post(
@@ -77,7 +74,7 @@ def extrair_instagram(username: str):
 
     return bio, followers, following, posts
 
-def analisar_com_gemini(texto: str):
+def analisar_com_groq(texto: str):
     prompt = (
         'Você é um auditor financeiro implacável, frio e experiente estrategista de vendas '
         'em uma clínica odontológica de estética de altíssimo ticket (High-Ticket). '
@@ -103,41 +100,34 @@ def analisar_com_gemini(texto: str):
         f'Dados coletados do perfil:\n{texto}'
     )
 
-    # 🚀 BLINDAGEM ATUALIZADA PARA CHAVES NOVAS (Geração 2.0)
-    modelos_para_testar = [
-        'gemini-2.0-flash',           # O modelo oficial atual liberado para chaves novas
-        'gemini-2.0-flash-exp',       # Versão experimental (sempre com cota liberada)
-        'gemini-1.5-flash'            # Backup caso a chave antiga ressuscite
-    ]
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Usando o modelo mais avançado e rápido da Groq
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": "Você é um assistente que retorna APENAS JSON válido."},
+            {"role": "user", "content": prompt}
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.2
+    }
 
-    ultimo_erro = None
-
-    for modelo in modelos_para_testar:
-        try:
-            print(f"Tentando motor: {modelo}...")
-            response = client.models.generate_content(
-                model=modelo,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                ),
-            )
-
-            texto_resposta = response.text.strip()
-            if texto_resposta.startswith("```json"):
-                texto_resposta = texto_resposta.removeprefix("```json").removesuffix("```").strip()
-            elif texto_resposta.startswith("```"):
-                texto_resposta = texto_resposta.removeprefix("```").removesuffix("```").strip()
-
-            print(f"Sucesso com o motor: {modelo}!")
-            return json.loads(texto_resposta)
-            
-        except Exception as e:
-            print(f"Motor {modelo} falhou. Motivo: {e}. Trocando para o próximo...")
-            ultimo_erro = e
-            continue 
-
-    raise HTTPException(status_code=500, detail=f"Todos os motores da IA falharam. Último erro: {ultimo_erro}")
+    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+    response.raise_for_status()
+    
+    resultado_str = response.json()["choices"][0]["message"]["content"]
+    
+    texto_resposta = resultado_str.strip()
+    if texto_resposta.startswith("```json"):
+        texto_resposta = texto_resposta.removeprefix("```json").removesuffix("```").strip()
+    elif texto_resposta.startswith("```"):
+        texto_resposta = texto_resposta.removeprefix("```").removesuffix("```").strip()
+        
+    return json.loads(texto_resposta)
 
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):
@@ -146,5 +136,5 @@ async def analisar(req: AnalisarRequest):
     
     texto_bruto = f"MÉTRICAS DE STATUS:\nSeguidores: {followers}\nSeguindo: {following}\n\nBIO:\n{bio}\n\nÚLTIMOS 8 POSTS:\n" + "\n---\n".join(posts)
     
-    resultado = analisar_com_gemini(texto_bruto)
+    resultado = analisar_com_groq(texto_bruto)
     return resultado
