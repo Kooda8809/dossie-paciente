@@ -103,11 +103,11 @@ def analisar_com_gemini(texto: str):
         f'Dados coletados do perfil:\n{texto}'
     )
 
-    # 🚀 O SISTEMA DE REDUNDÂNCIA (PLANO A, B e C)
+    # 🚀 O SISTEMA DE REDUNDÂNCIA BLINDADO
     modelos_para_testar = [
-        'gemini-1.5-pro',       # Plano A: Mais inteligente e estável
-        'gemini-1.5-flash',     # Plano B: Muito rápido e cota mais alta
-        'gemini-2.0-flash'      # Plano C: A versão mais nova (caso esteja liberada)
+        'gemini-1.5-flash',       # Cota massiva, super rápido
+        'gemini-1.5-pro',         # Cota menor, inteligência extrema
+        'gemini-1.0-pro'          # O legado indestrutível, nunca falha
     ]
 
     ultimo_erro = None
@@ -135,11 +135,9 @@ def analisar_com_gemini(texto: str):
         except Exception as e:
             print(f"Motor {modelo} falhou. Motivo: {e}. Trocando para o próximo...")
             ultimo_erro = e
-            continue # O código pula para o próximo modelo da lista silenciosamente
+            continue 
 
-    # Se a energia acabar e todos os geradores falharem
     raise HTTPException(status_code=500, detail=f"Todos os motores da IA falharam. Último erro: {ultimo_erro}")
-
 
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):
