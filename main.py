@@ -38,7 +38,6 @@ def extrair_instagram(username: str):
         json={
             "directUrls": [f"https://www.instagram.com/{username}/"],
             "resultsType": "details",
-            # Reduzido de 15 para 8 para evitar o limite de tempo do servidor gratuito (Timeout)
             "resultsLimit": 8, 
         },
     )
@@ -104,22 +103,43 @@ def analisar_com_gemini(texto: str):
         f'Dados coletados do perfil:\n{texto}'
     )
 
-    response = client.models.generate_content(
-        model='gemini-1.5-flash-8b',
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-        ),
-    )
+    # 🚀 O SISTEMA DE REDUNDÂNCIA (PLANO A, B e C)
+    modelos_para_testar = [
+        'gemini-1.5-pro',       # Plano A: Mais inteligente e estável
+        'gemini-1.5-flash',     # Plano B: Muito rápido e cota mais alta
+        'gemini-2.0-flash'      # Plano C: A versão mais nova (caso esteja liberada)
+    ]
 
-    # Sistema de limpeza de sujeira (Markdown) da resposta da Inteligência Artificial
-    texto_resposta = response.text.strip()
-    if texto_resposta.startswith("```json"):
-        texto_resposta = texto_resposta.removeprefix("```json").removesuffix("```").strip()
-    elif texto_resposta.startswith("```"):
-        texto_resposta = texto_resposta.removeprefix("```").removesuffix("```").strip()
+    ultimo_erro = None
 
-    return json.loads(texto_resposta)
+    for modelo in modelos_para_testar:
+        try:
+            print(f"Tentando motor: {modelo}...")
+            response = client.models.generate_content(
+                model=modelo,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+
+            texto_resposta = response.text.strip()
+            if texto_resposta.startswith("```json"):
+                texto_resposta = texto_resposta.removeprefix("```json").removesuffix("```").strip()
+            elif texto_resposta.startswith("```"):
+                texto_resposta = texto_resposta.removeprefix("```").removesuffix("```").strip()
+
+            print(f"Sucesso com o motor: {modelo}!")
+            return json.loads(texto_resposta)
+            
+        except Exception as e:
+            print(f"Motor {modelo} falhou. Motivo: {e}. Trocando para o próximo...")
+            ultimo_erro = e
+            continue # O código pula para o próximo modelo da lista silenciosamente
+
+    # Se a energia acabar e todos os geradores falharem
+    raise HTTPException(status_code=500, detail=f"Todos os motores da IA falharam. Último erro: {ultimo_erro}")
+
 
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):
