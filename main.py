@@ -5,8 +5,6 @@ import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-# A importação da biblioteca nova do Google
 from google import genai
 from google.genai import types
 
@@ -31,9 +29,7 @@ if not APIFY_TOKEN:
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY não definida")
 
-# Inicia o cliente com a sintaxe nova
 client = genai.Client(api_key=GEMINI_API_KEY)
-
 
 def extrair_instagram(username: str):
     run_resp = requests.post(
@@ -78,24 +74,32 @@ def extrair_instagram(username: str):
 
     return bio, posts
 
-
 def analisar_com_gemini(texto: str):
+    # Prompt de auditoria implacável com os novos parâmetros comportamentais e comerciais
     prompt = (
-        'Você é um estrategista de negócios e analista de perfil socioeconômico '
-        'em uma clínica odontológica de estética de altíssimo ticket. '
-        'Analise o Instagram deste futuro paciente para rastrear minuciosamente seu poder de compra '
-        'e sinais externos de riqueza. '
-        'Retorne APENAS um JSON estrito no seguinte formato: '
-        '{"estilo_atendimento": "Como conduzir a venda e contorno de objeções de preço", '
-        '"estilo_vestuario_design": "Descreva o estilo, listando NOME DE MARCAS de bolsas (ex: Chanel, Hermes), relógios ou grifes que identificar nas fotos", '
-        '"gostos_premium": ["lista detalhada", "incluindo MARCAS DE CARROS que aparecem", "destinos de viagens (nacional/internacional)", "hobbies caros"], '
-        '"sugestao_presente": "Sugira um presente sofisticado e exclusivo para encantar esse perfil (ex: vinho específico, marca de café premium)", '
-        '"capacidade_pagamento": "Dê um veredito direto: Baseado no lifestyle, qual o nível de poder aquisitivo para tratamentos de altíssimo padrão?", '
-        '"quebra_gelo": "A melhor pergunta para iniciar a conversa validando o ego ou gosto da pessoa"}\n\n'
-        f'Texto do perfil:\n{texto}'
+        'Você é um auditor financeiro implacável, frio e experiente estrategista de vendas '
+        'em uma clínica odontológica de estética de altíssimo ticket (High-Ticket). '
+        'Analise o Instagram deste futuro paciente para mapear sua real capacidade financeira e perfil psicológico. '
+        'REGRAS CRÚCIAIS DE VALORAÇÃO:\n'
+        '1. NÃO seja polido, otimista ou complacente. Se não houver sinais explícitos de luxo (marcas de grife, viagens internacionais frequentes, carros premium, hotéis 5 estrelas), classifique categoricamente como Baixo ou Médio Padrão.\n'
+        '2. Identifique marcas de luxo específicas de roupas/bolsas (ex: Chanel, Louis Vuitton, Prada, Gucci) ou carros.\n\n'
+        'Retorne UNICAMENTE um JSON estrito no seguinte formato exato:\n'
+        '{\n'
+        '  "capacidade_pagamento": "Veredito direto (Alto, Médio ou Baixo Padrão). Justifique friamente com base na presença ou ausência de patrimônio visível.",\n'
+        '  "perfil_disc": "Classifique em apenas uma palavra (Dominante, Influente, Estável ou Conforme) seguido de uma frase curta ensinando como falar com esse tipo de mente.",\n'
+        '  "objecao_principal": "Qual será o principal entrave na venda? (Preço, Tempo, Medo de Dor, Necessidade de aprovação de terceiros). Defina e dê a contra-argumentação.",\n'
+        '  "red_flags": "Identifique traços de vitimismo, inclinação a reclamações ou polêmicas. Se o perfil parecer tranquilo, retorne uma string vazia.",\n'
+        '  "match_estetica": "Defina a linha estética predileta do paciente com base no estilo de fotos: Naturalidade Absoluta (Discreto/Elegant) ou Branco Extravagante (Marcante/Alta visibilidade).",\n'
+        '  "radar_concorrentes": "Analise se há indícios de que ele busca ou consome outros players do mercado estético de luxo, ou se é altamente blindado. Retorne vazio se não notar nada.",\n'
+        '  "estilo_atendimento": "Script de condução comercial focada no fechamento do tratamento sem dar descontos.",\n'
+        '  "estilo_vestuario_design": "Relação de grifes, relógios e vestuário identificados ou deduzidos pelo nível de sofisticação.",\n'
+        '  "gostos_premium": ["Lista", "de hobbies", "destinos de viagem", "bens de valor"],\n'
+        '  "sugestao_presente": "Apresente 3 opções claras de mimos corporativos personalizados: 1) Um item minimalista/artesanal de alto padrão, 2) Uma experiência memorável, 3) Um item de luxo de marca consolidada.",\n'
+        '  "quebra_gelo": "A melhor frase de abertura magnética baseada no ego ou grande interesse do paciente."\n'
+        '}\n\n'
+        f'Dados coletados do perfil:\n{texto}'
     )
 
-    # Chamada atualizada exigindo o formato JSON nativamente
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=prompt,
@@ -105,7 +109,6 @@ def analisar_com_gemini(texto: str):
     )
 
     return json.loads(response.text)
-
 
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):

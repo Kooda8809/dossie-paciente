@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dossiê do Paciente</title>
+<title>Dossiê Executivo do Paciente</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --gold: #D4A853;
@@ -23,21 +23,18 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: 'Inter', sans-serif;
     background: #050505;
     color: var(--text-primary);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
   .font-display { font-family: 'Playfair Display', serif; }
+  .gold-text { color: var(--gold); }
   
   @keyframes shimmer {
     0% { background-position: -200% center; }
     100% { background-position: 200% center; }
-  }
-  @keyframes fadeSlideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
   }
   .shimmer {
     background: linear-gradient(90deg, transparent 0%, var(--gold-subtle) 50%, transparent 100%);
@@ -55,6 +52,14 @@
     color: var(--gold);
     letter-spacing: 0.01em;
   }
+  .badge-meta {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
   .card {
     background: var(--surface-card);
     border-radius: 12px;
@@ -66,7 +71,6 @@
     border: 1px solid var(--gold-border);
     border-radius: 12px;
     padding: 24px;
-    position: relative;
   }
   .search-btn {
     background: var(--gold);
@@ -81,9 +85,58 @@
     background: var(--gold-light);
     box-shadow: 0 0 20px var(--gold-glow);
   }
-  .fade-slide-up {
-    opacity: 0;
-    animation: fadeSlideUp 0.5s ease-out forwards;
+  .print-btn {
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    background: rgba(212, 168, 83, 0.05);
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .print-btn:hover {
+    background: var(--gold);
+    color: #050505;
+  }
+
+  /* REGRAS EXCLUSIVAS PARA IMPRESSÃO / SALVAR EM PDF */
+  @media print {
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+    }
+    header, #search-area, #empty-state, #loading, .print-btn {
+      display: none !important;
+    }
+    .card, .highlight-box {
+      background: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+      color: #000000 !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+    }
+    p, span, h1, h2, h3 {
+      color: #000000 !important;
+    }
+    .gold-text {
+      color: #b48523 !important;
+      font-weight: 700 !important;
+    }
+    .pill-tag {
+      border: 1px solid #b48523 !important;
+      color: #b48523 !important;
+      background: transparent !important;
+    }
+    #results {
+      display: block !important;
+    }
+    #app {
+      min-height: auto !important;
+    }
   }
 </style>
 </head>
@@ -94,23 +147,25 @@
   <header class="flex items-center justify-between px-8 py-5" style="border-bottom:1px solid rgba(255,255,255,0.04);">
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--gold);">
-        <svg class="w-5 h-5 text-black/70" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
         </svg>
       </div>
-      <span class="font-display text-xl tracking-wide">Dossiê</span>
+      <span class="font-display text-lg tracking-wide">Dossiê</span>
     </div>
-    </header>
+  </header>
 
   <main class="flex-1 flex justify-center px-6 py-12">
     <div class="w-full max-w-3xl">
 
       <div class="mb-10">
         <h1 class="font-display text-4xl sm:text-5xl font-medium tracking-tight">Dossiê do Paciente</h1>
-        <p class="mt-2 text-sm text-gray-500">Inteligência de análise socioeconômica e comportamental</p>
+        <p class="mt-2 text-sm text-gray-500">Mapeamento Psicológico, Comercial e de Poder Aquisitivo</p>
       </div>
 
-      <div class="flex items-center gap-3 p-2 rounded-xl mb-10" style="background:var(--surface);border:1px solid rgba(255,255,255,0.06);">
+      <div id="search-area" class="flex items-center gap-3 p-2 rounded-xl mb-10" style="background:var(--surface);border:1px solid rgba(255,255,255,0.06);">
         <div class="flex-1 flex items-center gap-2 px-3">
           <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
@@ -122,7 +177,7 @@
 
       <div id="loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
         <div class="w-10 h-10 rounded-full shimmer"></div>
-        <p class="text-sm gold-text">Mapeando estilo de vida e marcas...</p>
+        <p class="text-sm gold-text">Auditando estilo de vida, marcas e psicologia...</p>
       </div>
 
       <div id="empty-state" class="flex flex-col items-center justify-center py-20 gap-3">
@@ -131,72 +186,93 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </div>
-        <p class="text-sm text-gray-500">Insira o Instagram para iniciar o rastreio premium</p>
+        <p class="text-sm text-gray-500">Insira o Instagram para iniciar a varredura corporativa</p>
       </div>
 
       <div id="results" class="hidden space-y-6">
 
-        <div class="flex items-center gap-4 mb-2 fade-slide-up">
-          <div class="w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold" style="background:var(--gold-subtle);color:var(--gold);border:1px solid var(--gold-border);">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-12 3.22z"/></svg>
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold" style="background:var(--gold-subtle);color:var(--gold);border:1px solid var(--gold-border);">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            </div>
+            <div>
+              <h2 id="patient-handle" class="font-display text-2xl font-medium"></h2>
+              <p class="text-xs gold-text uppercase tracking-widest font-semibold">Análise de Inteligência Finalizada</p>
+            </div>
           </div>
-          <div>
-            <h2 id="patient-handle" class="font-display text-2xl font-medium"></h2>
-            <p class="text-xs gold-text uppercase tracking-widest font-semibold">Análise Socioeconômica Concluída</p>
-          </div>
+          
+          <button class="print-btn" onclick="window.print()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.82l-.14-.49a4.5 4.5 0 018.84 0l-.14.49m-9.14 0a4.5 4.5 0 009.14 0M15 18v3.5a.5.5 0 01-.5.5h-5a.5.5 0 01-.5-.5V18m5 0H9m6 0a2 2 0 012 2v1.5a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5V20a2 2 0 012-2m4-13.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+            Baixar PDF / Imprimir
+          </button>
         </div>
 
-        <div class="card fade-slide-up border-l-4 border-yellow-600" style="animation-delay:0.1s;">
-          <div class="flex items-center gap-2 mb-4">
-            <svg class="w-5 h-5 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Poder Aquisitivo & Veredito</span>
+        <div class="flex flex-wrap gap-2 mb-2">
+          <div id="badge-disc" class="badge-meta bg-amber-500/10 text-amber-400 border border-amber-500/20"></div>
+          <div id="badge-objecao" class="badge-meta bg-blue-500/10 text-blue-400 border border-blue-500/20"></div>
+          <div id="badge-redflag" class="badge-meta bg-red-500/10 text-red-400 border border-red-500/20 hidden"></div>
+        </div>
+
+        <div class="card border-l-4 border-yellow-600">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-5 h-5 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m9-9H3"/></svg>
+            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Auditoria de Poder Aquisitivo & Veredito</span>
           </div>
           <p id="capacidade-pagamento" class="text-sm leading-relaxed text-gray-300 font-medium"></p>
         </div>
 
-        <div class="card fade-slide-up" style="animation-delay:0.2s;">
-          <div class="flex items-center gap-2 mb-4">
-            <svg class="w-4 h-4 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Estratégia de Venda</span>
-          </div>
+        <div class="card">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p class="text-[10px] uppercase font-bold mb-2 text-gray-500">Abordagem Clínica</p>
+              <p class="text-[10px] uppercase font-bold mb-2 text-yellow-600 tracking-wider">Fechamento de Venda (Sem Desconto)</p>
               <p id="estilo-atendimento" class="text-sm leading-relaxed text-gray-400"></p>
             </div>
             <div>
-              <p class="text-[10px] uppercase font-bold mb-2 text-gray-500">Estilo & Marcas Identificadas</p>
+              <p class="text-[10px] uppercase font-bold mb-2 text-yellow-600 tracking-wider">Marcas e Grifes Identificadas</p>
               <p id="estilo-vestuario" class="text-sm leading-relaxed text-gray-400"></p>
             </div>
           </div>
         </div>
 
-        <div class="card fade-slide-up" style="animation-delay:0.3s;">
+        <div class="card grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p class="text-[10px] uppercase font-bold mb-2 text-gray-500 tracking-wider">Gestão Clínico-Psicológica (Perfil DISC)</p>
+            <p id="detalhe-disc" class="text-sm leading-relaxed text-gray-400"></p>
+          </div>
+          <div>
+            <p class="text-[10px] uppercase font-bold mb-2 text-gray-500 tracking-wider">Contorno de Objeção Principal</p>
+            <p id="detalhe-objecao" class="text-sm leading-relaxed text-gray-400"></p>
+          </div>
+        </div>
+
+        <div id="card-radares" class="card grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+          <div id="wrapper-estetica">
+            <p class="text-[10px] uppercase font-bold mb-2 text-purple-400 tracking-wider">Match de Linha Estética</p>
+            <p id="match-estetica" class="text-sm leading-relaxed text-gray-400"></p>
+          </div>
+          <div id="wrapper-concorrente">
+            <p class="text-[10px] uppercase font-bold mb-2 text-cyan-400 tracking-wider">Radar de Concorrência</p>
+            <p id="radar-concorrentes" class="text-sm leading-relaxed text-gray-400"></p>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="flex items-center gap-2 mb-4">
-            <svg class="w-4 h-4 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-            </svg>
-            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Lifestyle & Bens de Luxo</span>
+            <svg class="w-4 h-4 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Lifestyle, Bens & Interesses Premium</span>
           </div>
           <div id="gostos-list" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <div class="highlight-box fade-slide-up" style="animation-delay:0.4s;">
-          <div class="flex items-center gap-2 mb-4">
-            <svg class="w-4 h-4 gold-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            <span class="text-xs font-semibold uppercase tracking-wider gold-text">Momento de Encantamento</span>
-          </div>
+        <div class="highlight-box">
           <div class="space-y-4">
             <div>
-              <p class="text-[10px] uppercase font-bold mb-2 text-gray-500">Mimo Sugerido (Alta Conversão)</p>
-              <p id="sugestao-presente" class="text-sm leading-relaxed text-white"></p>
+              <p class="text-[10px] uppercase font-bold mb-1 text-gray-400 tracking-wider">Mimos e Presentes Estratégicos (3 Níveis)</p>
+              <p id="sugestao-presente" class="text-sm leading-relaxed text-white whitespace-pre-line"></p>
             </div>
-            <div>
-              <p class="text-[10px] uppercase font-bold mb-2 text-gray-500">Script de Abertura (Quebra-Gelo)</p>
+            <div class="pt-3 border-t border-yellow-600/20">
+              <p class="text-[10px] uppercase font-bold mb-1 text-gray-400 tracking-wider">Script de Abordagem Magnética (Quebra-Gelo)</p>
               <p id="quebra-gelo" class="text-sm leading-relaxed italic gold-text"></p>
             </div>
           </div>
@@ -220,7 +296,7 @@ async function handleSearch() {
   if (!query) return;
 
   btn.disabled = true;
-  btn.textContent = 'Rastreando lifestyle...';
+  btn.textContent = 'Acessando dados...';
   emptyState.classList.add('hidden');
   results.classList.add('hidden');
   loading.classList.remove('hidden');
@@ -232,12 +308,12 @@ async function handleSearch() {
       body: JSON.stringify({ username: query })
     });
 
-    if (!response.ok) throw new Error('Erro na análise');
+    if (!response.ok) throw new Error('Erro interno');
 
     const data = await response.json();
     loading.classList.add('hidden');
 
-    // Injeção dos dados
+    // Injeção de Dados Básicos
     document.getElementById('patient-handle').textContent = '@' + query;
     document.getElementById('capacidade-pagamento').textContent = data.capacidade_pagamento;
     document.getElementById('estilo-atendimento').textContent = data.estilo_atendimento;
@@ -245,21 +321,68 @@ async function handleSearch() {
     document.getElementById('sugestao-presente').textContent = data.sugestao_presente;
     document.getElementById('quebra-gelo').textContent = data.quebra_gelo;
 
+    // Configuração do Bloco DISC
+    const discPalavra = data.perfil_disc.split(' ')[0].replace(/[^a-zA-ZãõáéíóúÁÉÍÓÚ]/g, '');
+    document.getElementById('badge-disc').textContent = '🎯 Perfil: ' + discPalavra;
+    document.getElementById('detalhe-disc').textContent = data.perfil_disc;
+
+    // Configuração de Objeções
+    const objPalavra = data.objecao_principal.split(' ')[0].replace(/[^a-zA-ZãõáéíóúÁÉÍÓÚ]/g, '');
+    document.getElementById('badge-objecao').textContent = '💰 Objeção: ' + objPalavra;
+    document.getElementById('detalhe-objecao').textContent = data.objecao_principal;
+
+    // Configuração Dinâmica de Red Flags (Alertas de Pacientes Tóxicos)
+    const badgeRed = document.getElementById('badge-redflag');
+    if (data.red_flags && data.red_flags.trim().length > 0) {
+      badgeRed.textContent = '⚠️ ALERTA DE RED FLAG';
+      badgeRed.classList.remove('hidden');
+      // Injeta o alerta discretamente no campo de abordagem clínica para alertar o dentista
+      document.getElementById('estilo-atendimento').innerHTML = `<strong>[ALERTA COGNITIVO]:</strong> ${data.red_flags}<br><br>${data.estilo_atendimento}`;
+    } else {
+      badgeRed.classList.add('hidden');
+    }
+
+    // Configuração Dinâmica de Radares Estruturais
+    const cardRadares = document.getElementById('card-radares');
+    let temRadar = false;
+
+    if (data.match_estetica) {
+      document.getElementById('match-estetica').textContent = data.match_estetica;
+      document.getElementById('wrapper-estetica').classList.remove('hidden');
+      temRadar = true;
+    } else {
+      document.getElementById('wrapper-estetica').classList.add('hidden');
+    }
+
+    if (data.radar_concorrentes && data.radar_concorrentes.trim().length > 0) {
+      document.getElementById('radar-concorrentes').textContent = data.radar_concorrentes;
+      document.getElementById('wrapper-concorrente').classList.remove('hidden');
+      temRadar = true;
+    } else {
+      document.getElementById('wrapper-concorrente').classList.add('hidden');
+    }
+
+    if (temRadar) cardRadares.classList.remove('hidden');
+    else cardRadares.classList.add('hidden');
+
+    // Listagem de Tags de Lifestyle
     const gostosContainer = document.getElementById('gostos-list');
     gostosContainer.innerHTML = '';
-    data.gostos_premium.forEach(item => {
-      const tag = document.createElement('span');
-      tag.className = 'pill-tag';
-      tag.textContent = item;
-      gostosContainer.appendChild(tag);
-    });
+    if (data.gostos_premium) {
+      data.gostos_premium.forEach(item => {
+        const tag = document.createElement('span');
+        tag.className = 'pill-tag';
+        tag.textContent = item;
+        gostosContainer.appendChild(tag);
+      });
+    }
 
     results.classList.remove('hidden');
     btn.disabled = false;
     btn.textContent = 'Nova Análise';
 
   } catch (error) {
-    alert('Erro ao analisar perfil. Verifique se o perfil é público.');
+    alert('Erro na leitura do perfil. Confirme se a conta é aberta e tente novamente.');
     loading.classList.add('hidden');
     emptyState.classList.remove('hidden');
     btn.disabled = false;
