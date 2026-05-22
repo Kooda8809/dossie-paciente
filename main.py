@@ -81,16 +81,17 @@ def extrair_instagram(username: str):
 
 def analisar_com_gemini(texto: str):
     prompt = (
-        'Você é um estrategista de experiência do paciente (Patient Experience) '
-        'em uma clínica odontológica de estética de altíssimo padrão. '
-        'Analise o Instagram deste futuro paciente para que o dentista possa '
-        'personalizar o atendimento e criar momentos de encantamento. '
+        'Você é um estrategista de negócios e analista de perfil socioeconômico '
+        'em uma clínica odontológica de estética de altíssimo ticket. '
+        'Analise o Instagram deste futuro paciente para rastrear minuciosamente seu poder de compra '
+        'e sinais externos de riqueza. '
         'Retorne APENAS um JSON estrito no seguinte formato: '
-        '{"estilo_atendimento": "Descreva como o dentista deve agir", '
-        '"estilo_vestuario_design": "Identifique o estilo de roupas", '
-        '"gostos_premium": ["lista", "de", "gostos"], '
-        '"sugestao_presente": "Sugira um presente", '
-        '"quebra_gelo": "A melhor pergunta para iniciar a conversa"}\n\n'
+        '{"estilo_atendimento": "Como conduzir a venda e contorno de objeções de preço", '
+        '"estilo_vestuario_design": "Descreva o estilo, listando NOME DE MARCAS de bolsas (ex: Chanel, Hermes), relógios ou grifes que identificar nas fotos", '
+        '"gostos_premium": ["lista detalhada", "incluindo MARCAS DE CARROS que aparecem", "destinos de viagens (nacional/internacional)", "hobbies caros"], '
+        '"sugestao_presente": "Sugira um presente sofisticado e exclusivo para encantar esse perfil (ex: vinho específico, marca de café premium)", '
+        '"capacidade_pagamento": "Dê um veredito direto: Baseado no lifestyle, qual o nível de poder aquisitivo para tratamentos de altíssimo padrão?", '
+        '"quebra_gelo": "A melhor pergunta para iniciar a conversa validando o ego ou gosto da pessoa"}\n\n'
         f'Texto do perfil:\n{texto}'
     )
 
