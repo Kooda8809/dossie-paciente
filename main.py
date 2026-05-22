@@ -38,7 +38,7 @@ def extrair_instagram(username: str):
         json={
             "directUrls": [f"https://www.instagram.com/{username}/"],
             "resultsType": "details",
-            "resultsLimit": 5,
+            "resultsLimit": 15, # AUMENTADO DE 5 PARA 15 POSTS
         },
     )
     run_resp.raise_for_status()
@@ -60,32 +60,36 @@ def extrair_instagram(username: str):
     ).json()
 
     if not items:
-        raise HTTPException(400, "Perfil não encontrado ou sem dados.")
+        raise HTTPException(400, "Perfil não encontrado ou bloqueado pelo anti-bot do Instagram.")
 
     profile = items[0]
     bio = profile.get("biography") or ""
+    
+    # NOVOS DADOS DE STATUS SOCIAL
+    followers = profile.get("followersCount", 0)
+    following = profile.get("followsCount", 0)
 
     posts_raw = profile.get("latestPosts") or []
     posts = []
-    for p in posts_raw[:5]:
+    for p in posts_raw:
         caption = p.get("caption") or p.get("text") or ""
         if caption:
             posts.append(caption.strip())
 
-    return bio, posts
+    return bio, followers, following, posts
 
 def analisar_com_gemini(texto: str):
-    # Prompt de auditoria implacável com os novos parâmetros comportamentais e comerciais
     prompt = (
         'Você é um auditor financeiro implacável, frio e experiente estrategista de vendas '
         'em uma clínica odontológica de estética de altíssimo ticket (High-Ticket). '
-        'Analise o Instagram deste futuro paciente para mapear sua real capacidade financeira e perfil psicológico. '
+        'Analise os dados deste futuro paciente para mapear sua real capacidade financeira e perfil psicológico. '
         'REGRAS CRÚCIAIS DE VALORAÇÃO:\n'
-        '1. NÃO seja polido, otimista ou complacente. Se não houver sinais explícitos de luxo (marcas de grife, viagens internacionais frequentes, carros premium, hotéis 5 estrelas), classifique categoricamente como Baixo ou Médio Padrão.\n'
-        '2. Identifique marcas de luxo específicas de roupas/bolsas (ex: Chanel, Louis Vuitton, Prada, Gucci) ou carros.\n\n'
+        '1. Considere a relação de Seguidores vs Seguindo para entender o status social e o ego da pessoa.\n'
+        '2. NÃO seja polido, otimista ou complacente. Avalie o histórico longo de postagens. Se não houver sinais explícitos de luxo, classifique categoricamente como Baixo ou Médio Padrão.\n'
+        '3. Identifique marcas de luxo específicas, destinos de viagens ou hábitos.\n\n'
         'Retorne UNICAMENTE um JSON estrito no seguinte formato exato:\n'
         '{\n'
-        '  "capacidade_pagamento": "Veredito direto (Alto, Médio ou Baixo Padrão). Justifique friamente com base na presença ou ausência de patrimônio visível.",\n'
+        '  "capacidade_pagamento": "Veredito direto (Alto, Médio ou Baixo Padrão). Justifique friamente com base na presença/ausência de patrimônio e status social (seguidores).",\n'
         '  "perfil_disc": "Classifique em apenas uma palavra (Dominante, Influente, Estável ou Conforme) seguido de uma frase curta ensinando como falar com esse tipo de mente.",\n'
         '  "objecao_principal": "Qual será o principal entrave na venda? (Preço, Tempo, Medo de Dor, Necessidade de aprovação de terceiros). Defina e dê a contra-argumentação.",\n'
         '  "red_flags": "Identifique traços de vitimismo, inclinação a reclamações ou polêmicas. Se o perfil parecer tranquilo, retorne uma string vazia.",\n'
@@ -113,7 +117,10 @@ def analisar_com_gemini(texto: str):
 @app.post("/analisar")
 async def analisar(req: AnalisarRequest):
     username = req.username.strip().lstrip("@")
-    bio, posts = extrair_instagram(username)
-    texto_bruto = f"Bio: {bio}\n\nÚltimos posts:\n" + "\n---\n".join(posts)
+    bio, followers, following, posts = extrair_instagram(username)
+    
+    # Criando o dossiê bruto com os novos dados sociais e mais posts
+    texto_bruto = f"MÉTRICAS DE STATUS:\nSeguidores: {followers}\nSeguindo: {following}\n\nBIO:\n{bio}\n\nÚLTIMOS 15 POSTS:\n" + "\n---\n".join(posts)
+    
     resultado = analisar_com_gemini(texto_bruto)
     return resultado
